@@ -1,6 +1,10 @@
 pipeline {
     agent any
-  
+
+    tools {
+        nodejs "testenvnode"
+    }
+
     stages {
         stage ('cleanup'){
             steps{
@@ -13,5 +17,14 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/PXL-2TIN-DevOps-Resources/calculator-app-finished.git'
             }
         }
+
+        stage('install dependencies') {
+            steps {
+                script {
+                    sh 'npm install'
+                }
+            }
+        }
+
     }
 }
