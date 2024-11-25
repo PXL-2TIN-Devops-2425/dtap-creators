@@ -6,25 +6,37 @@ pipeline {
     }
 
     stages {
-        stage ('cleanup'){
-            steps{
+        stage('Cleanup') {
+            steps {
                 cleanWs()
             }
         }
-        stage('fetch app code') {
+        
+        stage('Fetch app code') {
             steps {
-                // Get some code from a GitHub repository
                 git branch: 'main', url: 'https://github.com/PXL-2TIN-DevOps-Resources/calculator-app-finished.git'
             }
         }
 
-        stage('install dependencies') {
+        stage('Install dependencies') {
             steps {
-                script {
-                    sh 'npm install'
-                }
+                sh 'npm install'
             }
         }
 
+        stage('Build artifact') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub_credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                }
+                sh 'docker build . -t lieve91/calculatorapp:latest'
+            }
+        }
+
+        stage('Push artifact') {
+            steps {
+                sh 'docker push lieve91/calculatorapp:latest'
+            }
+        }
     }
 }
