@@ -14,5 +14,40 @@ pipeline {
                 }
             }
         }
+        stage('start prod') {
+            steps {
+                sshagent(['prodserver']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 << EOF
+                    
+                    docker stop calculatorapp || true
+                    docker rm calculatorapp || true
+                    
+                    docker run -d --name calculatorapp -p 80:80 lieve91/calculatorapp:latest
+
+                    docker ps | grep calculatorapp
+                    EOF
+                    '''
+                }
+            }
+        }
+
+        stage('test prod') {
+            steps {
+                sshagent(['prodserver']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 << EOF
+                    HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://54.147.161.138)
+
+                    if [ "$HTTP_STATUS" -eq 200 ]; then
+                        echo "Applicatie draait correct! Statuscode: $HTTP_STATUS"
+                    else
+                        echo "Fout: Applicatie draait niet correct! Statuscode: $HTTP_STATUS"
+                        exit 1
+                    fi
+                    EOF
+                    '''
+                }
+            }
     }
 }
