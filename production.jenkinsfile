@@ -10,7 +10,7 @@ pipeline {
         stage('deploy prod') {
             steps {
                 sshagent(['prodserver']) {
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 lieve91/calculatorapp:latest"
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 docker pull lieve91/calculatorapp:latest"
                 }
             }
         }
