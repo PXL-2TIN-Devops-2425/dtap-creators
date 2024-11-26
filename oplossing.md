@@ -22,3 +22,13 @@ Om toegang te hebben tot docker, moet de gebruiker van Jenkins eerst rechten heb
 ```sudo systemctl restart jenkins```
 5. Als je dan inlogt als de jenkins gebruiker, kan je testen of je rechten hebt tot docker:
 ![user_toevoegen](https://github.com/user-attachments/assets/df28af9f-2cb2-4ebc-b2a4-36addecdb458)
+
+## c) SSH credentails toevoegen met sshagent voor production server
+Om met SSH te kunnen verbinden met de production server, moeten we een ssh key meegeven met het ssh commando. Deze key kunnen we instellen via sshagent in Jenkins.
+1. Ga naar Manage Jenkins/Credentials en voeg een nieuwe global credential toe.
+2. Vul de gegevens in zoals hieronder (private key staat in de pem-file van je EC2 van AWS):
+   ![sshagent-credentials](https://github.com/user-attachments/assets/a671a2a6-dc2f-410a-b087-3a30c57240d2)
+3. Nu kunnen we connecteren met de production server via ssh:
+   ![sshagent-pipeline](https://github.com/user-attachments/assets/16db4f0b-b6cc-4086-b11c-783ec6d1332d)
+
+  **Let op!** Gebruik het public ip van jouw eigen EC2.
