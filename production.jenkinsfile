@@ -1,10 +1,17 @@
 pipeline {
     agent any
     stages {
-        stage('dtap production') {
+       stage('Cleanup') {
             steps {
-                echo "good luck..."
+                cleanWs()
             }
         }
-    }
+
+        stage('deploy prod') {
+            steps {
+                sshagent(['prodserver']) {
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 lieve91/calculatorapp:latest"
+                }
+            }
+        }
 }
