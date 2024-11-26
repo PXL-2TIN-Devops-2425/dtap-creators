@@ -38,5 +38,12 @@ pipeline {
                 sh 'docker push lieve91/calculatorapp:latest'
             }
         }
+
+         stage('deployment') {
+            steps {
+                sh 'docker pull lieve91/calculatorapp:latest'
+                sh 'docker run -d -p 3000:80 lieve91/calculatorapp:latest'
+            }
+        }
     }
 }
