@@ -9,6 +9,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 cleanWs()
+                sh 'fuser -k 3000/tcp'
             }
         }
         
