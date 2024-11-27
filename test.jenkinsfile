@@ -8,8 +8,9 @@ pipeline {
     stages {
         stage('Cleanup') {
             steps {
+                sh 'docker stop calculatorapp || true'
+                sh 'docker rm calculatorapp || true'
                 cleanWs()
-                sh 'fuser -k 3000/tcp'
             }
         }
         
@@ -43,7 +44,7 @@ pipeline {
          stage('deployment') {
             steps {
                 sh 'docker pull lieve91/calculatorapp:latest'
-                sh 'docker run -d -p 3000:80 lieve91/calculatorapp:latest'
+                sh 'docker run -d --name calculatorapp -p 3000:80 lieve91/calculatorapp:latest '
             }
         }
     }
