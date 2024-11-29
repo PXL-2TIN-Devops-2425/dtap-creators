@@ -29,17 +29,20 @@
         stage('test prod') {
             steps {
                 sshagent(['prodserver']) {
-                    sh '''
-                    HTTP_STATUS=$(ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "curl -o /dev/null -s -w \"%{http_code}\" http://54.147.161.138")
-                    if [ "$HTTP_STATUS" -eq 200 ]; then
-                        echo "Applicatie draait correct! Statuscode: $HTTP_STATUS"
-                    else
-                        echo "Fout: Applicatie draait niet correct! Statuscode: $HTTP_STATUS"
-                        exit 1
-                    fi
-                    '''
+                    script {
+                        sh '''
+                        HTTP_STATUS=$(ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "curl -o /dev/null -s -w \"%{http_code}\" http://54.147.161.138")
+                        if [ "$HTTP_STATUS" -eq 200 ]; then
+                            echo "Applicatie draait correct! Statuscode: $HTTP_STATUS"
+                        else
+                            echo "Fout: Applicatie draait niet correct! Statuscode: $HTTP_STATUS"
+                            exit 1
+                        fi
+                        '''
+                    }
                 }
             }
         }
+
     }
 }
