@@ -1,4 +1,4 @@
-pipeline {
+    pipeline {
     agent any
     stages {
        stage('Cleanup') {
@@ -30,17 +30,13 @@ pipeline {
             steps {
                 sshagent(['prodserver']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "HTTP_STATUS=$(curl -o /dev/null -s -w \"%{http_code}\" http://54.147.161.138)"
-                    '''
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "
-                    if [ \"$HTTP_STATUS\" -eq 200 ]; then
-                        echo \"Applicatie draait correct! Statuscode: $HTTP_STATUS\"
+                    HTTP_STATUS=$(ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "curl -o /dev/null -s -w \"%{http_code}\" http://54.147.161.138")
+                    if [ "$HTTP_STATUS" -eq 200 ]; then
+                        echo "Applicatie draait correct! Statuscode: $HTTP_STATUS"
                     else
-                        echo \"Fout: Applicatie draait niet correct! Statuscode: $HTTP_STATUS\"
+                        echo "Fout: Applicatie draait niet correct! Statuscode: $HTTP_STATUS"
                         exit 1
                     fi
-                    "
                     '''
                 }
             }
