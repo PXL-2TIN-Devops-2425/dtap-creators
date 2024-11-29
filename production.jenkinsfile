@@ -18,7 +18,7 @@ pipeline {
             steps {
                 sshagent(['prodserver']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 << EOF
+                    ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 << 'EOF'
                     
                     docker stop calculatorapp || true
                     docker rm calculatorapp || true
@@ -36,7 +36,7 @@ pipeline {
             steps {
                 sshagent(['prodserver']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 << EOF
+                    ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 << 'EOF'
                     HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://54.147.161.138)
 
                     if [ "$HTTP_STATUS" -eq 200 ]; then
