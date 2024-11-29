@@ -1,37 +1,36 @@
-    pipeline {
+pipeline {
     agent any
+    environment {
+        PROD_IP = "44.193.207.53"
+        COMMAND = "ssh -o StrictHostKeyChecking=no ubuntu@${env.PROD_IP}"
+    }
     stages {
-       stage('Cleanup') {
-            steps {
-                cleanWs()
-            }
-        }
-
+    
         stage('deploy prod') {
             steps {
                 sshagent(['prodserver']) {
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 docker pull lieve91/calculatorapp:latest"
-                }
-            }
-        }
-        stage('start prod') {
-            steps {
-                sshagent(['prodserver']) {
-                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "docker stop calculatorapp || true"'
-                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "docker rm calculatorapp || true"'
-                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "docker run -d --name calculatorapp -p 80:80 lieve91/calculatorapp:latest"'
-                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "docker ps | grep calculatorapp"'
+                    sh "$COMMAND docker pull lieve91/calculatorapp:latest"
                 }
             }
         }
 
+        stage('start prod') {
+            steps {
+                sshagent(['prodserver']) {
+                    sh "$COMMAND \"docker stop calculatorapp || true\""
+                    sh "$COMMAND \"docker rm calculatorapp || true\""
+                    sh "$COMMAND \"docker run -d --name calculatorapp -p 80:80 lieve91/calculatorapp:latest\""
+                    sh "$COMMAND \"docker ps | grep calculatorapp\""
+                }
+            }
+        }
 
         stage('test prod') {
             steps {
                 sshagent(['prodserver']) {
                     script {
                         sh '''
-                        HTTP_STATUS=$(ssh -o StrictHostKeyChecking=no ubuntu@54.147.161.138 "curl -o /dev/null -s -w \"%{http_code}\" http://54.147.161.138")
+                        HTTP_STATUS=$(ssh -o StrictHostKeyChecking=no ubuntu@${PROD_IP} "curl -o /dev/null -s -w '%{http_code}' http://${PROD_IP}")
                         if [ "$HTTP_STATUS" -eq 200 ]; then
                             echo "Applicatie draait correct! Statuscode: $HTTP_STATUS"
                         else
@@ -43,6 +42,11 @@
                 }
             }
         }
-
+    }
+    
+    post{
+        always{
+            cleanWs()
+        }
     }
 }
