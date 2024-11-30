@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        PROD_IP = "44.193.207.53"
+        PROD_IP = "3.238.65.144"
         COMMAND = "ssh -o StrictHostKeyChecking=no ubuntu@${env.PROD_IP}"
     }
     stages {
@@ -19,7 +19,7 @@ pipeline {
                 sshagent(['prodserver']) {
                     sh "$COMMAND \"docker stop calculatorapp || true\""
                     sh "$COMMAND \"docker rm calculatorapp || true\""
-                    sh "$COMMAND \"docker run -d --name calculatorapp -p 80:80 lieve91/calculatorapp:latest\""
+                    sh "$COMMAND \"docker run -d --name calculatorapp -p 80:3000 lieve91/calculatorapp:latest\""
                     sh "$COMMAND \"docker ps | grep calculatorapp\""
                 }
             }
