@@ -1,17 +1,54 @@
 pipeline {
     agent any
-  
+
+    tools {
+        nodejs "testenvnode"
+    }
+
     stages {
-        stage ('cleanup'){
-            steps{
-                // TODO
-            }
-        }
-        stage('fetch app code') {
+        stage('Fetch app code') {
             steps {
-                // Get some code from a GitHub repository
                 git branch: 'main', url: 'https://github.com/PXL-2TIN-DevOps-Resources/calculator-app-finished.git'
             }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build artifact') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub_credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                }
+                sh 'docker build . -t lieve91/calculatorapp:${BUILD_NUMBER}'
+            }
+        }
+
+        stage('Push artifact') {
+            steps {
+                sh 'docker push lieve91/calculatorapp:${BUILD_NUMBER}'
+                sh 'docker tag lieve91/calculatorapp:${BUILD_NUMBER} lieve91/calculatorapp:latest'
+                sh 'docker push lieve91/calculatorapp:latest'
+            }
+        }
+
+         stage('deployment') {
+            steps {
+                sh 'docker stop calculatorapp || true'
+                sh 'docker rm calculatorapp || true'
+                sh 'docker pull lieve91/calculatorapp:latest'
+                sh 'docker run -d --name calculatorapp -p 3000:3000 lieve91/calculatorapp:latest '
+            }
+        }
+    }
+    
+    post {
+        always {
+            sh 'docker image prune -a -f'
+            cleanWs()
         }
     }
 }

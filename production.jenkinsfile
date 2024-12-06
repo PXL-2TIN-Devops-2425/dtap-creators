@@ -1,10 +1,53 @@
 pipeline {
     agent any
+    environment {
+        PROD_IP = "3.238.65.144"
+        COMMAND = "ssh -o StrictHostKeyChecking=no ubuntu@${env.PROD_IP}"
+    }
     stages {
-        stage('dtap production') {
+    
+        stage('deploy prod') {
             steps {
-                echo "good luck..."
+                sshagent(['prodserver']) {
+                    sh "$COMMAND docker pull lieve91/calculatorapp:latest"
+                }
             }
+        }
+
+        stage('start prod') {
+            steps {
+                sshagent(['prodserver']) {
+                    sh "$COMMAND \"docker stop calculatorapp || true\""
+                    sh "$COMMAND \"docker rm calculatorapp || true\""
+                    sh "$COMMAND \"docker run -d --name calculatorapp -p 80:3000 lieve91/calculatorapp:latest\""
+                    sh "$COMMAND \"docker ps | grep calculatorapp\""
+                }
+            }
+        }
+
+        stage('test prod') {
+            steps {
+                sshagent(['prodserver']) {
+                    script {
+                        sleep(10)
+                        sh '''
+                        HTTP_STATUS=$(ssh -o StrictHostKeyChecking=no ubuntu@${PROD_IP} "curl -o /dev/null -s -w '%{http_code}' http://${PROD_IP}")
+                        if [ "$HTTP_STATUS" -eq 200 ]; then
+                            echo "Applicatie draait correct! Statuscode: $HTTP_STATUS"
+                        else
+                            echo "Fout: Applicatie draait niet correct! Statuscode: $HTTP_STATUS"
+                            exit 1
+                        fi
+                        '''
+                    }
+                }
+            }
+        }
+    }
+    
+    post{
+        always{
+            cleanWs()
         }
     }
 }
