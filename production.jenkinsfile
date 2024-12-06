@@ -29,6 +29,7 @@ pipeline {
             steps {
                 sshagent(['prodserver']) {
                     script {
+                        sleep(10)
                         sh '''
                         HTTP_STATUS=$(ssh -o StrictHostKeyChecking=no ubuntu@${PROD_IP} "curl -o /dev/null -s -w '%{http_code}' http://${PROD_IP}")
                         if [ "$HTTP_STATUS" -eq 200 ]; then
